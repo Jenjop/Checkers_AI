@@ -113,7 +113,4 @@ class StudentAI():
         if root.move is not None:
             self.board.undo()
 
-    def rec_alpha_beta_heuristic(self, root: Tree):
-        if root.move is not None:
-            self.board.make_move(root.move, root.color)
 
