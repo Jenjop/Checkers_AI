@@ -3,7 +3,7 @@ from BoardClasses import Board
 
 # The following part should be completed by students.
 # Students can modify anything except the class name and exisiting functions and varibles.
-search_depth = 6 #Search depth for recursive func
+search_depth = 5 #Search depth for recursive func
 
 class Tree():
     def __init__(self, color, move=None):
