@@ -3,7 +3,7 @@ from BoardClasses import Board
 
 # The following part should be completed by students.
 # Students can modify anything except the class name and exisiting functions and varibles.
-search_depth = 5 #Search depth for recursive func
+search_depth = 5#Search depth for recursive func
 
 class Tree():
     def __init__(self, color, move=None):
@@ -32,8 +32,8 @@ class StudentAI():
             self.color = 1
 
         root = Tree(self.opponent[self.color]) #Tree root
-        self.rec_tree(root, search_depth)
-        self.rec_heuristic(root)
+        self.rec_tree(root, search_depth)#Set up tree
+        self.rec_min_max_heuristic(root)
 
         avail_moves = root.value[list(root.value)[0]]
         cur_move = avail_moves[0]
@@ -81,7 +81,7 @@ class StudentAI():
             for child in root.children:
                 self.print_tree(child, level + 1)
 
-    def rec_tree(self, root: Tree, level=1):
+    def rec_tree(self, root: Tree, level=1):#Create tree up to depth level
         if level == 0:
             pass
         else:
@@ -99,16 +99,21 @@ class StudentAI():
             if root.move is not None:
                 self.board.undo()
 
-    def rec_heuristic(self, root: Tree):
-        if root.move is not None:
+    def rec_min_max_heuristic(self, root: Tree):#Apply min_max heuristic to tree
+        if root.move is not None: #If not root of tree, make the move required to get here
             self.board.make_move(root.move, root.color)
         if len(root.children) == 0: #Passed node has no children
             pass #Evaluate heuristic for board(and return?)
             root.value = {self.board_points(): []}
         else: #Evaluate rec_heuristic for children, then retrieve values and apply min/max as appropriate
             for child in root.children:
-                self.rec_heuristic(child)
+                self.rec_min_max_heuristic(child)
             root.value = self.min_max(root.children, root.color)
 
         if root.move is not None:
             self.board.undo()
+
+    def rec_alpha_beta_heuristic(self, root: Tree):
+        if root.move is not None:
+            self.board.make_move(root.move, root.color)
+
