@@ -1,9 +1,9 @@
 from BoardClasses import Board
 
-
 # The following part should be completed by students.
 # Students can modify anything except the class name and exisiting functions and varibles.
-search_depth = 5#Search depth for recursive func
+search_depth = 5  # Search depth for recursive func
+
 
 class Tree():
     def __init__(self, color, move=None):
@@ -11,6 +11,8 @@ class Tree():
         self.move = move
         self.value = None
         self.children = []
+        self.alpha = -999
+        self.beta = 999
 
 
 class StudentAI():
@@ -31,33 +33,19 @@ class StudentAI():
         else:
             self.color = 1
 
-        root = Tree(self.opponent[self.color]) #Tree root
-        self.rec_tree(root, search_depth)#Set up tree
+        root = Tree(self.opponent[self.color])  # Tree root
+        self.rec_tree(root, search_depth)  # Set up tree
         self.rec_min_max_heuristic(root)
 
         avail_moves = root.value[list(root.value)[0]]
         cur_move = avail_moves[0]
-        #print(avail_moves)
+        # print(avail_moves)
 
         self.board.make_move(cur_move, self.color)  # Make the optimal move
         move = cur_move
         return move
 
-    def ftu(self, color): #Function to use (min vs max by color)
-        if color == self.color:  # Calculate Min
-            return max
-        else:  # Calculate Max
-            return min
-
-    def min_max(self, children, color):  # Returns dict -> {Max/min value: Moves to get here}
-        ftu = self.ftu(color) #Use corresponding min or max depending on color
-        value_map = {}
-        for child in children:
-            for v in child.value.keys():
-                value_map.setdefault(v, []).append(child.move)  # D: {heuristic value: Move to make to get here}
-        # print(value_map)
-        return {ftu(value_map): value_map[ftu(value_map)]}
-
+    # Board Heuristic
     def board_points(self):  # 5 + row number for pawns, 5 + row number + 2 for kings
         pts = 0
         for i in range(self.row):
@@ -73,6 +61,40 @@ class StudentAI():
                         pts -= 2
         return pts if self.color == "B" else -pts
 
+    def rec_tree(self, root: Tree, level=1):  # Create tree up to depth level
+        if level == 0:
+            pass
+        else:
+            if root.move is not None:  # Not root of tree
+                self.board.make_move(root.move, root.color)
+            # Check if win here maybe?
+            avail_moves = self.board.get_all_possible_moves(self.opponent[root.color])
+            for i in range(len(avail_moves)):
+                for j in range(len(avail_moves[i])):
+                    # print(root)
+                    root.children.append(Tree(self.opponent[root.color], avail_moves[i][j]))
+            for child in root.children:
+                self.rec_tree(child, level - 1)
+
+            if root.move is not None:
+                self.board.undo()
+
+    # MinMax Functions
+    def ftu(self, color):  # Function to use (min vs max by color)
+        if color == self.color:  # Calculate Min
+            return max
+        else:  # Calculate Max
+            return min
+
+    def min_max(self, children, color):  # Returns dict -> {Max/min value: Moves to get here}
+        ftu = self.ftu(color)  # Use corresponding min or max depending on color
+        value_map = {}
+        for child in children:
+            for v in child.value.keys():
+                value_map.setdefault(v, []).append(child.move)  # D: {heuristic value: Move to make to get here}
+        # print(value_map)
+        return {ftu(value_map): value_map[ftu(value_map)]}
+
     def print_tree(self, root, level=0):
         # print("PRINTING TREE")
 
@@ -81,36 +103,24 @@ class StudentAI():
             for child in root.children:
                 self.print_tree(child, level + 1)
 
-    def rec_tree(self, root: Tree, level=1):#Create tree up to depth level
-        if level == 0:
-            pass
-        else:
-            if root.move is not None:  # Not root of tree
-                self.board.make_move(root.move, root.color)
-            #Check if win here maybe?
-            avail_moves = self.board.get_all_possible_moves(self.opponent[root.color])
-            for i in range(len(avail_moves)):
-                for j in range(len(avail_moves[i])):
-                    #print(root)
-                    root.children.append( Tree(self.opponent[root.color], avail_moves[i][j] ) )
-            for child in root.children:
-                self.rec_tree(child, level - 1)
-
-            if root.move is not None:
-                self.board.undo()
-
-    def rec_min_max_heuristic(self, root: Tree):#Apply min_max heuristic to tree
-        if root.move is not None:
+    def rec_min_max_heuristic(self, root: Tree):  # Apply min_max heuristic to tree
+        if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
             self.board.make_move(root.move, root.color)
-        if len(root.children) == 0: #Passed node has no children
-            pass #Evaluate heuristic for board(and return?)
-            root.value = {self.board_points(): []}
-        else: #Evaluate rec_heuristic for children, then retrieve values and apply min/max as appropriate
+        if len(root.children) == 0:  # Passed node has no children
+            pass  # Evaluate heuristic for board(and return?)
+            root.value = {
+                self.board_points(): []}  # Value will be dict with key = heuristic points and value = all the moves that result in that many points
+        else:  # Evaluate rec_heuristic for children, then retrieve values and apply min/max as appropriate
             for child in root.children:
                 self.rec_min_max_heuristic(child)
             root.value = self.min_max(root.children, root.color)
 
         if root.move is not None:
-            self.board.undo()
+            self.board.undo()  # Undo move to revert action (done for searching) and return to parent
 
-    
+    #AlphaBeta Functions
+    def rec_abp_heuristic(self, root: Tree):  # Alpha Beta Pruning
+        if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
+            self.board.make_move(root.move, root.color)
+        if len(root.children) == 0:  # Passed node has no children aka this is lowest level/leaf
+            root.value = {}
