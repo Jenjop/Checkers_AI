@@ -40,7 +40,22 @@ class StudentAI():
 
         avail_moves = root.value[list(root.value)[0]]
         cur_move = avail_moves[0]
-        # print(avail_moves)
+        '''
+        print("ALL MOVES")
+        moves = self.board.get_all_possible_moves(self.color)
+        for i, checker_moves in enumerate(moves):
+            print(i, ':[', end="")
+            for j, move in enumerate(checker_moves):
+                print(j, ":", move, end=", ")
+            print("]")
+        print("AVAIL MOVES")
+        #print(avail_moves)
+        for i, checker_moves in enumerate(avail_moves):
+            print(i, ':[', end="")
+            for j, move in enumerate(checker_moves):
+                print(j, ":", move, end=", ")
+            print("]")
+        '''
 
         self.board.make_move(cur_move, self.color)  # Make the optimal move
         move = cur_move
@@ -122,16 +137,20 @@ class StudentAI():
     # AlphaBeta Functions
     def set_alpha_beta(self, root, child, color):
         ftu = self.ftu(color)
+        if child.value is None:
+            print(child)
+        if root.value is None:
+            root.value = {}
         if color == self.color:  # Max aka update alpha
             # return ftu(alpha, ftu(child.value)), beta
             if root.alpha < ftu(child.value):
                 root.alpha = ftu(child.value)
-                root.value.setdefault(root.alpha, []).append(child.move)
+            root.value.setdefault(root.alpha, []).append(child.move)
         else:  # Min aka update beta
             # return alpha, ftu(beta, ftu(child.value))
             if root.beta > ftu(child.value):
                 root.beta = ftu(child.value)
-                root.value.setdefault(root.beta, []).append(child.move)
+            root.value.setdefault(root.beta, []).append(child.move)
 
     def rec_abp_heuristic(self, root: Tree, alpha=-999, beta=999):  # Alpha Beta Pruning
         if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
@@ -142,10 +161,9 @@ class StudentAI():
             root.alpha = alpha
             root.beta = beta
             for child in root.children:
-                if root.alpha >= rootbeta:  # Break out of loop once alpha >= beta (Pruning)
+                if root.alpha >= root.beta:  # Break out of loop once alpha >= beta (Pruning)
                     break
                 self.rec_abp_heuristic(child, root.alpha, root.beta)
-                self.set_alpha_beta(root, child,
-                                    color)  # Apply alpha/beta values based on min/max of child to current node
+                self.set_alpha_beta(root, child, root.color)  # Apply alpha/beta values based on min/max of child to current node
         if root.move is not None:
             self.board.undo()
