@@ -12,7 +12,7 @@ from random import randint
 debug = True
 
 
-search_depth = 3  # Search depth for recursive func
+search_depth = 5  # Search depth for recursive func
 
 
 class Tree():
@@ -23,6 +23,10 @@ class Tree():
         self.children = []
         self.alpha = -999
         self.beta = 999
+
+
+def color(color: int):
+    return "B" if color == 1 else "W"
 
 
 class StudentAI():
@@ -69,9 +73,9 @@ class StudentAI():
             print("]")
         '''
         #if self.dif_val:
-#            print("##########TREE##########")
-#            self.print_tree(root)
-#            print("##########TREE##########")
+        if debug: print("##########TREE##########")
+        self.print_tree(root)
+        if debug: print("##########TREE##########")
 #            self.dif_val = False
         self.board.make_move(cur_move, self.color)  # Make the optimal move
         move = cur_move
@@ -95,10 +99,12 @@ class StudentAI():
 
         if abs(pts) > 2:
             self.dif_val = True
-        print(self.color)
-        return pts if self.color == "1" else -pts #BLACK(1) GOES FIRST, so positive points, if self.color == white(2), then return white pieces as positive points
+        #if debug: print(color(root.color), pts, -pts)
+        return pts if self.color == 1 else -pts #BLACK(1) GOES FIRST, so positive points, if self.color == white(2), then return white pieces as positive points
 
     def print_tree(self, root, level=0):
+        if not debug:
+            return
         print("\t" * level, root.value, "->", root.move)
         if len(root.children) != 0:  # Not Leaf node
             for child in root.children:
@@ -160,43 +166,42 @@ class StudentAI():
             print(child)
         if root.value is None:
             root.value = {}
-        if color == self.color:  # Max aka update alpha
+        if color == self.color:  # Max aka update alpha (This ai's turn)
             # return ftu(alpha, ftu(child.value)), beta
             if root.alpha < ftu(child.value):
                 root.alpha = ftu(child.value)
             root.value.setdefault(root.alpha, []).append(child.move)
-        else:  # Min aka update beta
+        else:  # Min aka update beta (Opponent's turn)
             # return alpha, ftu(beta, ftu(child.value))
             if root.beta > ftu(child.value):
                 root.beta = ftu(child.value)
             root.value.setdefault(root.beta, []).append(child.move)
 
     def rec_abp_heuristic(self, root: Tree, alpha=-999, beta=999, level = 0):  # Alpha Beta Pruning
-        if debug: print("\t" * level, "B" if self.color == 1 else "W", self.board_points())
-        if debug: print("\t" * level, "Enter: ", root.value, "->", root.move)
+        if debug: print("\t" * level, color(root.color), "Enter: ", root.value, "->", root.move)
         old_val = root.value
         if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
             self.board.make_move(root.move, root.color)
-        if debug: print("\t" * level, "B" if self.color == 1 else "W", self.board_points())
         if len(root.children) == 0:  # Passed node has no children aka this is lowest level/leaf
             root.value = {self.board_points(): []}
-            if debug: print("\t" * level, root.value, "->", root.move)
+            if debug: print("\t" * level, "LEAF: ", root.value, "->", root.move)
         else:  # Evaluate heuristic for child, retrieve value, update alphabeta, continue with next child if appropriate
             root.alpha = alpha
             root.beta = beta
-            if debug: print("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t", "CHILDREN:", end=" ")
+            if debug: print("\t" * 16, "CHILDREN:", end=" ")
             for child in root.children:
                 if debug: print(child.move, end=", ")
-            if debug: print()
+            if debug: print("(",color(self.opponent[root.color]), ")", sep="")
             for child in root.children:
                 if root.alpha >= root.beta:  # Break out of loop once alpha >= beta (Pruning)
+                    if debug: print("PRUNING")
                     break
                 self.rec_abp_heuristic(child, root.alpha, root.beta, level + 1)
                 self.set_alpha_beta(root, child, root.color)  # Apply alpha/beta values based on min/max of child to current node
-                if debug: print("\t" * level, "New Value: ", root.value, "->", root.move)
+                if debug: print("\t" * level, color(root.color), "New Value: ", root.value, "->", root.move)
         if root.move is not None:
             self.board.undo()
-        if debug: print("\t" * level, "Exit: ", root.value, "->", root.move)
+        if debug: print("\t" * level, color(root.color), "Exit: ", root.value, "->", root.move)
         #print(max(list(root.value), key = abs), "\t", root.move, "->", root.value)
         #if abs(max(list(root.value), key = abs)) > 2:
             #print("\t" * level, "Enter: ", old_val, "->", root.move)
