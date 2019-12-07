@@ -1,8 +1,18 @@
 from BoardClasses import Board
+from random import randint
 
 # The following part should be completed by students.
 # Students can modify anything except the class name and exisiting functions and varibles.
-search_depth = 5  # Search depth for recursive func
+
+#NOTES
+#Black goes first in 7x7 manual: "7" "7" "2" "m" "0"
+#Black = 1, White = 2
+#Coordinates (1,3) is first row down, 3rd column over
+
+debug = True
+
+
+search_depth = 3  # Search depth for recursive func
 
 
 class Tree():
@@ -26,6 +36,7 @@ class StudentAI():
         self.color = ''
         self.opponent = {1: 2, 2: 1}
         self.color = 2
+        self.dif_val = False
 
     def get_move(self, move):
         if len(move) != 0:
@@ -39,6 +50,7 @@ class StudentAI():
         self.rec_abp_heuristic(root)
 
         avail_moves = root.value[list(root.value)[0]]
+        #cur_move = avail_moves[randint(0,len(avail_moves)-1)]
         cur_move = avail_moves[0]
         '''
         print("ALL MOVES")
@@ -56,7 +68,11 @@ class StudentAI():
                 print(j, ":", move, end=", ")
             print("]")
         '''
-
+        #if self.dif_val:
+#            print("##########TREE##########")
+#            self.print_tree(root)
+#            print("##########TREE##########")
+#            self.dif_val = False
         self.board.make_move(cur_move, self.color)  # Make the optimal move
         move = cur_move
         return move
@@ -72,14 +88,17 @@ class StudentAI():
                     if checker.is_king:  # 2 additional pts for king
                         pts += 2
                 elif checker.color == 'W':  # FOr white side pieces
-                    pts -= 11 - checker.row  # 5 + (6 - Row)
+                    #pts -= (11 - checker.row)  # 5 + (6 - Row)
+                    pts -= (5 + (self.row - checker.row - 1)) #5 + (Num of rows - Row - 1) eg. 5x5 board, 5th row is 5(num) - 4(row) -1 = 0
                     if checker.is_king:  # 2 additional pts for king
                         pts -= 2
-        return pts if self.color == "B" else -pts
+
+        if abs(pts) > 2:
+            self.dif_val = True
+        print(self.color)
+        return pts if self.color == "1" else -pts #BLACK(1) GOES FIRST, so positive points, if self.color == white(2), then return white pieces as positive points
 
     def print_tree(self, root, level=0):
-        # print("PRINTING TREE")
-
         print("\t" * level, root.value, "->", root.move)
         if len(root.children) != 0:  # Not Leaf node
             for child in root.children:
@@ -152,18 +171,56 @@ class StudentAI():
                 root.beta = ftu(child.value)
             root.value.setdefault(root.beta, []).append(child.move)
 
-    def rec_abp_heuristic(self, root: Tree, alpha=-999, beta=999):  # Alpha Beta Pruning
+    def rec_abp_heuristic(self, root: Tree, alpha=-999, beta=999, level = 0):  # Alpha Beta Pruning
+        if debug: print("\t" * level, "B" if self.color == 1 else "W", self.board_points())
+        if debug: print("\t" * level, "Enter: ", root.value, "->", root.move)
+        old_val = root.value
         if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
             self.board.make_move(root.move, root.color)
+        if debug: print("\t" * level, "B" if self.color == 1 else "W", self.board_points())
         if len(root.children) == 0:  # Passed node has no children aka this is lowest level/leaf
             root.value = {self.board_points(): []}
+            if debug: print("\t" * level, root.value, "->", root.move)
         else:  # Evaluate heuristic for child, retrieve value, update alphabeta, continue with next child if appropriate
             root.alpha = alpha
             root.beta = beta
+            if debug: print("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t", "CHILDREN:", end=" ")
+            for child in root.children:
+                if debug: print(child.move, end=", ")
+            if debug: print()
             for child in root.children:
                 if root.alpha >= root.beta:  # Break out of loop once alpha >= beta (Pruning)
                     break
-                self.rec_abp_heuristic(child, root.alpha, root.beta)
+                self.rec_abp_heuristic(child, root.alpha, root.beta, level + 1)
                 self.set_alpha_beta(root, child, root.color)  # Apply alpha/beta values based on min/max of child to current node
+                if debug: print("\t" * level, "New Value: ", root.value, "->", root.move)
         if root.move is not None:
             self.board.undo()
+        if debug: print("\t" * level, "Exit: ", root.value, "->", root.move)
+        #print(max(list(root.value), key = abs), "\t", root.move, "->", root.value)
+        #if abs(max(list(root.value), key = abs)) > 2:
+            #print("\t" * level, "Enter: ", old_val, "->", root.move)
+            #print("\t" * level, "Exit: ", root.value, "->", root.move)
+
+    def rec_abp_v2(self, root: Tree, alpha = -999, beta = 999):
+        if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
+            self.board.make_move(root.move, root.color)
+        if len(root.children) == 0:
+            root.value = {self.board_points():[]}
+        else:
+            if color == self.color: #MaximizingPlayer
+                alpha = -999
+                for child in root.children:
+                    alpha = max(alpha, rec_abp_v2(child, alpha, beta))
+                    if alpha >= beta:
+                        break
+                return alpha
+            else:
+                beta = 999
+                for child in root.children:
+                    beta = min(beta, alphabeta(child, alpha, beta))
+                    if alpha >= beta:
+                        break
+                return beta
+
+
