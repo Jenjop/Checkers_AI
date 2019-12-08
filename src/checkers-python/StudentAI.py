@@ -4,15 +4,23 @@ from random import randint
 # The following part should be completed by students.
 # Students can modify anything except the class name and exisiting functions and varibles.
 
-#NOTES
-#Black goes first in 7x7 manual: "7" "7" "2" "m" "0"
-#Black = 1, White = 2
-#Coordinates (1,3) is first row down, 3rd column over
+'''
+NOTES
+Black goes first in 7x7 manual: "7" "7" "2" "m" "0"
+Black = 1, White = 2
+Coordinates (1,3) is first row down, 3rd column over
 
-debug = True
+Root.move is move that opponent made to get to current spot, so root.move is "None"
+root.children = moves available for ai to make
+root.value holds board_pts value keys matched with corresponding children from root.children that would result in that value
+'''
 
 
-search_depth = 5  # Search depth for recursive func
+
+debug = False
+
+
+search_depth = 4  # Search depth for recursive func
 
 
 class Tree():
@@ -105,7 +113,7 @@ class StudentAI():
     def print_tree(self, root, level=0):
         if not debug:
             return
-        print("\t" * level, root.value, "->", root.move)
+        print("\t" * level, color(root.color), root.value, "->", root.move)
         if len(root.children) != 0:  # Not Leaf node
             for child in root.children:
                 self.print_tree(child, level + 1)
@@ -132,7 +140,7 @@ class StudentAI():
     def ftu(self, color):  # Function to use (min vs max by color)
         if color == self.color:  # Calculate Max
             return max
-        else:  # Calculate Max
+        else:  # Calculate Min
             return min
 
     def min_max(self, children, color):  # Returns dict -> {Max/min value: Moves to get here}
@@ -188,10 +196,12 @@ class StudentAI():
         else:  # Evaluate heuristic for child, retrieve value, update alphabeta, continue with next child if appropriate
             root.alpha = alpha
             root.beta = beta
+
             if debug: print("\t" * 16, "CHILDREN:", end=" ")
             for child in root.children:
                 if debug: print(child.move, end=", ")
             if debug: print("(",color(self.opponent[root.color]), ")", sep="")
+
             for child in root.children:
                 if root.alpha >= root.beta:  # Break out of loop once alpha >= beta (Pruning)
                     if debug: print("PRUNING")
