@@ -59,19 +59,30 @@ class StudentAI():
         return {ftu(value_map): value_map[ftu(value_map)]}
 
     def board_points(self):  # 5 + row number for pawns, 5 + row number + 2 for kings
-        pts = 0
-        for i in range(self.row):
-            for j in range(self.col):
-                checker = self.board.board[i][j]
-                if checker.color == 'B':  # For black side pieces
-                    pts += 5 + checker.row
-                    if checker.is_king:  # 2 additional pts for king
-                        pts += 2
-                elif checker.color == 'W':  # FOr white side pieces
-                    pts -= 11 - checker.row  # 5 + (6 - Row)
-                    if checker.is_king:  # 2 additional pts for king
-                        pts -= 2
-        return pts if self.color == "B" else -pts
+        def board_points(self):  # 5 + row number for pawns, 5 + row number + 2 for kings
+            king_pts_value = 5 + (
+                        self.row - 1) + 2  # 5 pts for piece, self.row -1 pts for pts at end of board, + 1 for being king
+            pts = 0
+            for i in range(self.row):
+                for j in range(self.col):
+                    checker = self.board.board[i][j]
+                    if checker.color == 'B':  # For black side pieces
+                        if checker.is_king:
+                            pts += king_pts_value
+                        else:
+                            pts += 5 + checker.row
+                    elif checker.color == 'W':  # FOr white side pieces
+                        # pts -= (11 - checker.row)  # 5 + (6 - Row)
+                        if checker.is_king:
+                            pts -= king_pts_value
+                        else:
+                            pts -= (5 + (
+                                        self.row - checker.row - 1))  # 5 + (Num of rows - Row - 1) eg. 5x5 board, 5th row is 5(num) - 4(row) -1 = 0
+
+            if abs(pts) > 2:
+                self.dif_val = True
+            # if debug: print(color(root.color), pts, -pts)
+            return pts if self.color == 1 else -pts  # BLACK(1) GOES FIRST, so positive points, if self.color == white(2), then return white pieces as positive points
 
     def print_tree(self, root, level=0):
         # print("PRINTING TREE")
