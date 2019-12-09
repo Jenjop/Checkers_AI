@@ -15,11 +15,7 @@ root.children = moves available for ai to make
 root.value holds board_pts value keys matched with corresponding children from root.children that would result in that value
 Leaves with value == None probably pruned
 '''
-
-
-
 debug = False
-
 
 search_depth = 5# Search depth for recursive func
 
@@ -100,6 +96,7 @@ class StudentAI():
     # Board Heuristic
     def board_points(self):  # 5 + row number for pawns, 5 + row number + 2 for kings
         king_pts_value = 5 + (self.row - 1) + 2 #5 pts for piece, self.row -1 pts for pts at end of board, + 1 for being king
+
         pts = 0
         for i in range(self.row):
             for j in range(self.col):
