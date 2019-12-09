@@ -60,9 +60,9 @@ class StudentAI():
         root = Tree(self.opponent[self.color])  # Tree root
         self.rec_tree(root, search_depth)  # Set up tree
 
-        #self.rec_min_max_heuristic(root)
+        self.rec_min_max_heuristic(root)
 
-        self.rec_abp_heuristic(root)
+        #self.rec_abp_heuristic(root)
 
         #self.rec_abp_v2(root)
 
@@ -119,7 +119,7 @@ class StudentAI():
         if abs(pts) > 2:
             self.dif_val = True
         #if debug: print(color(root.color), pts, -pts)
-        return pts if self.color == 1 else -pts #BLACK(1) GOES FIRST, so positive points, if self.color == white(2), then return white pieces as positive points
+        return pts if self.color == 2 else -pts #BLACK(1) GOES FIRST, so positive points, if self.color == white(2), then return white pieces as positive points
 
     def print_tree(self, root, level=0):
         if not debug:
