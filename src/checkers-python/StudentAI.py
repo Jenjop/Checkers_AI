@@ -1,4 +1,5 @@
 from BoardClasses import Board
+from random import randint
 
 
 # The following part should be completed by students.
@@ -36,7 +37,8 @@ class StudentAI():
         self.rec_min_max_heuristic(root)
 
         avail_moves = root.value[list(root.value)[0]]
-        cur_move = avail_moves[0]
+        #cur_move = avail_moves[0]
+        cur_move = avail_moves[randint(0,len(avail_moves)-1)]
         #print(avail_moves)
 
         self.board.make_move(cur_move, self.color)  # Make the optimal move
