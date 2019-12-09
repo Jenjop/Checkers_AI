@@ -21,7 +21,7 @@ Leaves with value == None probably pruned
 debug = False
 
 
-search_depth = 6# Search depth for recursive func
+search_depth = 5# Search depth for recursive func
 
 
 class Tree():
@@ -59,13 +59,19 @@ class StudentAI():
 
         root = Tree(self.opponent[self.color])  # Tree root
         self.rec_tree(root, search_depth)  # Set up tree
+
         #self.rec_min_max_heuristic(root)
+
         self.rec_abp_heuristic(root)
+
+        #self.rec_abp_v2(root)
+
 
         avail_moves = root.value[list(root.value)[0]]
 
         #cur_move = avail_moves[randint(0,len(avail_moves)-1)]
         cur_move = avail_moves[0]
+
         '''
         print("ALL MOVES")
         moves = self.board.get_all_possible_moves(self.color)
@@ -226,22 +232,53 @@ class StudentAI():
     def rec_abp_v2(self, root: Tree, alpha = -999, beta = 999):
         if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
             self.board.make_move(root.move, root.color)
+        else:
+            root.value = {}
         if len(root.children) == 0:
-            root.value = {self.board_points():[]}
+            root.value = self.board_points()
+            if root.move is not None:
+                self.board.undo()
+            return root.value
         else:
             if color == self.color: #MaximizingPlayer
-                alpha = -999
+                #val = -999
                 for child in root.children:
-                    alpha = max(alpha, rec_abp_v2(child, alpha, beta))
+                    '''
+                    val = max(val, rec_abp_v2(child, alpha, beta))
+                    alpha = max(alpha, val)
+                    '''
+                    val = self.rec_abp_v2(child, alpha, beta)
+                    if alpha > val: #Alpha > Val
+                        root.alpha = alpha
+                    else: #Val > Alpha
+                        alpha = val
+                        if root.move is None: #Root node, ie save the move to get here
+                            root.value.setdefault(alpha, []).append(child.move)
+                        root.alpha = alpha
                     if alpha >= beta:
                         break
+                if root.move is not None:
+                    self.board.undo()
                 return alpha
-            else:
-                beta = 999
+            else: #Minimizing Player
+                #val = 999
                 for child in root.children:
-                    beta = min(beta, alphabeta(child, alpha, beta))
+                    '''
+                    val = min(val, alphabeta(child, alpha, beta))
+                    beta = min(val, beta)
+                    '''
+                    val = self.rec_abp_v2(child, alpha, beta)
+                    if beta < val: #Beta < Val
+                        root.beta = beta
+                    else:
+                        beta = val
+                        if root.move is None:
+                            root.value.setdefault(beta, []).append(child.move)
+                        root.beta = beta
                     if alpha >= beta:
                         break
+                if root.move is not None:
+                    self.board.undo()
                 return beta
 
 
