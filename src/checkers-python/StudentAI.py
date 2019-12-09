@@ -13,6 +13,7 @@ Coordinates (1,3) is first row down, 3rd column over
 Root.move is move that opponent made to get to current spot, so root.move is "None"
 root.children = moves available for ai to make
 root.value holds board_pts value keys matched with corresponding children from root.children that would result in that value
+Leaves with value == None probably pruned
 '''
 
 
@@ -20,7 +21,7 @@ root.value holds board_pts value keys matched with corresponding children from r
 debug = False
 
 
-search_depth = 4  # Search depth for recursive func
+search_depth = 6# Search depth for recursive func
 
 
 class Tree():
@@ -62,6 +63,7 @@ class StudentAI():
         self.rec_abp_heuristic(root)
 
         avail_moves = root.value[list(root.value)[0]]
+
         #cur_move = avail_moves[randint(0,len(avail_moves)-1)]
         cur_move = avail_moves[0]
         '''
@@ -91,19 +93,22 @@ class StudentAI():
 
     # Board Heuristic
     def board_points(self):  # 5 + row number for pawns, 5 + row number + 2 for kings
+        king_pts_value = 5 + (self.row - 1) + 2 #5 pts for piece, self.row -1 pts for pts at end of board, + 1 for being king
         pts = 0
         for i in range(self.row):
             for j in range(self.col):
                 checker = self.board.board[i][j]
                 if checker.color == 'B':  # For black side pieces
-                    pts += 5 + checker.row
-                    if checker.is_king:  # 2 additional pts for king
-                        pts += 2
+                    if checker.is_king:
+                        pts += king_pts_value
+                    else:
+                        pts += 5 + checker.row
                 elif checker.color == 'W':  # FOr white side pieces
                     #pts -= (11 - checker.row)  # 5 + (6 - Row)
-                    pts -= (5 + (self.row - checker.row - 1)) #5 + (Num of rows - Row - 1) eg. 5x5 board, 5th row is 5(num) - 4(row) -1 = 0
-                    if checker.is_king:  # 2 additional pts for king
-                        pts -= 2
+                    if checker.is_king:
+                        pts -= king_pts_value
+                    else:
+                        pts -= (5 + (self.row - checker.row - 1)) #5 + (Num of rows - Row - 1) eg. 5x5 board, 5th row is 5(num) - 4(row) -1 = 0
 
         if abs(pts) > 2:
             self.dif_val = True
@@ -190,6 +195,7 @@ class StudentAI():
         old_val = root.value
         if root.move is not None:  # AKA this is root, the move is what opponent made to get here (none so we don't have to redo move on our board)
             self.board.make_move(root.move, root.color)
+        #self.board.show_board()
         if len(root.children) == 0:  # Passed node has no children aka this is lowest level/leaf
             root.value = {self.board_points(): []}
             if debug: print("\t" * level, "LEAF: ", root.value, "->", root.move)
