@@ -17,7 +17,7 @@ Leaves with value == None probably pruned
 '''
 debug = False
 
-search_depth = 5# Search depth for recursive func
+search_depth = 6# Search depth for recursive func
 
 
 class Tree():
