@@ -46,19 +46,20 @@ class StudentAI():
         self.color = ''
         self.opponent = {1: 2, 2: 1}
         self.color = 2
+        self.ct = 0
         #self.dif_val = False
-        if self.col * self.row < 40: #6x6
+        self.size = self.col * self.row
+        if self.size < 40: #6x6
             #print(8)
-            search_depth = 8
-        elif self.col * self.row < 50: #7x7
+            self.search_depth = 8
+        elif self.size < 50: #7x7
             #print(7)
-            search_depth = 7
-        elif self.col * self.row < 70: #8x8
+            self.search_depth = 5
+        elif self.size < 80: #8x8
             #print(6)
-            search_depth = 6
-        elif self.col * self.row < 90: #9x9
-            #print(5)
-            search_depth = 5
+            self.search_depth = 4
+        else:
+            self.search_depth = 4
 
 
     def get_move(self, move):
@@ -67,8 +68,46 @@ class StudentAI():
         else:
             self.color = 1
 
+        try:
+            self.search_depth
+        except NameError:
+            print("ERROR")
+            search_depth = 5
+
+        if self.size < 40: #6x6
+            if self.ct == 5:
+                self.search_depth += 1 #9
+            elif self.ct == 10:
+                self.search_depth += 1 #10
+        elif self.size < 50: #7x7
+            if self.ct == 2:
+                self.search_depth += 1  #6
+            elif self.ct == 5:
+                self.search_depth += 1  #7
+            if self.ct == 10:
+                self.search_depth += 1 #8
+            elif self.ct == 15:
+                self.search_depth += 1 #9
+            elif self.ct == 20:
+                self.search_depth += 1 #10
+        elif self.size < 80: #8x8
+            if self.ct == 3:
+                self.search_depth += 1 #5
+            elif self.ct == 5:
+                self.search_depth += 1 #6
+            elif self.ct == 7:
+                self.search_depth += 1 #7
+            elif self.ct == 11:
+                self.search_depth += 1 #8
+        else:
+            if self.ct == 10:
+                self.search_depth += 1
+            elif self.ct == 20:
+                self.search_depth += 2
+
         root = Tree(self.opponent[self.color])  # Tree root
-        self.rec_tree(root, search_depth)  # Set up tree
+        #print('Detph', self.search_depth, self.ct)
+        self.rec_tree(root, self.search_depth)  # Set up tree
 
         self.rec_min_max_heuristic(root)
 
