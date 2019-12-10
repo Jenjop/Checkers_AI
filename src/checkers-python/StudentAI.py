@@ -48,16 +48,16 @@ class StudentAI():
         self.color = 2
         #self.dif_val = False
         if self.col * self.row < 40: #6x6
-            print(8)
+            #print(8)
             search_depth = 8
         elif self.col * self.row < 50: #7x7
-            print(7)
+            #print(7)
             search_depth = 7
         elif self.col * self.row < 70: #8x8
-            print(6)
+            #print(6)
             search_depth = 6
         elif self.col * self.row < 90: #9x9
-            print(5)
+            #print(5)
             search_depth = 5
 
 
@@ -119,19 +119,6 @@ class StudentAI():
         for i in range(self.row):
             for j in range(self.col):
                 checker = self.board.board[i][j]
-                '''
-                if checker.color == 'B':  # For black side pieces
-                    if checker.is_king:
-                        pts += king_pts_value
-                    else:
-                        pts += 5 + checker.row
-                elif checker.color == 'W':  # FOr white side pieces
-                    #pts -= (11 - checker.row)  # 5 + (6 - Row)
-                    if checker.is_king:
-                        pts -= king_pts_value
-                    else:
-                        pts -= (5 + (self.row - checker.row - 1)) #5 + (Num of rows - Row - 1) eg. 5x5 board, 5th row is 5(num) - 4(row) -1 = 0
-                '''
                 if checker.color == "B": #Black
                     if checker.is_king:
                         b_kings.add((i,j))
@@ -142,6 +129,26 @@ class StudentAI():
                         w_kings.add((i,j))
                     else:
                         w_pawns.add((i,j))
+        # if b_pawns == set():
+        #     print("-" * 20)
+        #     self.board.show_board()
+        # b_pawns = set()
+        # b_kings = set()
+        # w_pawns = set()
+        # w_kings = set()
+        # for i in range(self.row):
+        #     for j in range(self.col):
+        #         checker = self.board.board[i][j]
+        #         if checker.color == "B": #Black
+        #             if checker.is_king:
+        #                 b_kings.add((i,j))
+        #             else:
+        #                 b_pawns.add((i,j))
+        #         elif checker.color == "W": #White
+        #             if checker.is_king:
+        #                 w_kings.add((i,j))
+        #             else:
+        #                 w_pawns.add((i,j))
 
         for pawn in b_pawns:
             pts += 5 + pawn[0]
@@ -154,7 +161,8 @@ class StudentAI():
                 dist += sqrt((king[0] - w[0])**2 + (king[1] - w[1])**2)
             for w in w_pawns:
                 dist += sqrt((king[0] - w[0]) ** 2 + (king[1] - w[1]) ** 2)
-            pts -= dist/(len(w_kings) + len(w_pawns))
+            if len(w_kings) + len(w_pawns) != 0:
+                pts -= dist/(len(w_kings) + len(w_pawns))
         for king in w_kings:
             pts -= king_pts_value
             dist = 0
@@ -162,9 +170,8 @@ class StudentAI():
                 dist += sqrt((king[0] - b[0]) ** 2 + (king[1] - b[1]) ** 2)
             for b in b_pawns:
                 dist += sqrt((king[0] - b[0]) ** 2 + (king[1] - b[1]) ** 2)
-            if len(b_kings) + len(b_pawns) == 0:
-                print(b_kings, b_pawns)
-            pts += dist/(len(b_kings) + len(b_pawns))
+            if len(b_kings) + len(b_pawns) != 0:
+                pts += dist/(len(b_kings) + len(b_pawns))
 
         #if abs(pts) > 2:
 #            self.dif_val = True
